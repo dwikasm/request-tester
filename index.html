@@ -19,7 +19,7 @@
       </div>
     </section>
     <section class="section is-small">
-      <form action="javascript:submit()" id="requestForm">
+      <form action="javascript:submit()" onreset="reset()" id="requestForm">
         <div class="container">
           <div class="section-item" id="main">
             <div class="field has-addons is-grouped">
@@ -50,10 +50,14 @@
                 />
               </div>
               <div class="control">
-                <a class="button is-small is-info" id="requestButton">
+                <button class="button is-small is-info" type="submit" id="requestButton">
                   Send
-                </a>
-                <input type="submit" value="submit" hidden/>
+                </button>
+              </div>
+              <div class="control">
+                <button class="button is-small is-light" type="reset">
+                  Clear
+                </button>
               </div>
             </div>
           </div>
@@ -200,6 +204,10 @@
         setTimeout(() => {
           setRequestLoading(false);
         }, 2000);
+      }
+
+      function reset() {
+        document.getElementById('requestForm').reset();
       }
 
       function setRequestLoading(boolean) {
