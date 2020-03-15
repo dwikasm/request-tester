@@ -1,0 +1,19 @@
+.section-item:not(:last-child) {
+  margin-bottom: 1rem;
+}
+
+.tabs.custom-tabs {
+  margin-bottom: 0;
+}
+
+.content-list-item {
+  display: none;
+}
+
+.content-list-item.is-active {
+  display: block;
+}
+
+.response-tabs-info {
+  margin-left: auto;
+}
