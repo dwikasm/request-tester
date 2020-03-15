@@ -26,10 +26,10 @@
               <div class="control">
                 <div class="select is-small">
                   <select name="type">
-                    <option value="ajax">AJAX</option>
                     <option value="xhr">XHR</option>
-                    <option value="axios">AXIOS</option>
                     <option value="fetch">FETCH</option>
+                    <option value="ajax">AJAX</option>
+                    <option value="axios">AXIOS</option>
                   </select>
                 </div>
               </div>
@@ -50,14 +50,14 @@
                 />
               </div>
               <div class="control">
-                <a class="button is-small is-info">
+                <a class="button is-small is-info" id="requestButton">
                   Send
                 </a>
                 <input type="submit" value="submit" hidden/>
               </div>
             </div>
           </div>
-          <div class="section-item is-tabbed flex flex-column" id="request">
+          <div class="section-item is-tabbed" id="request">
             <div class="tabs is-small custom-tabs">
               <ul>
                 <li class="is-active"><a onclick="openTab(event, '#request', 0)">Params</a></li>
@@ -119,7 +119,7 @@
               </div>
             </div>
           </div>
-          <div class="section-item is-tabbed flex flex-column" id="response">
+          <div class="section-item is-tabbed" id="response">
             <div class="tabs is-small custom-tabs">
               <ul>
                 <li class="is-active"><a onclick="openTab(event, '#response', 0)">Body</a></li>
@@ -144,6 +144,8 @@
       </div>
     </section>
     <script>
+      var global_isRequestLoading = false;
+
       function openTab(evt, contentId, tabIndex) {
         const tabsItems = document.querySelectorAll(`${contentId} .tabs ul li`);
         const contentItems = document.querySelectorAll(`${contentId} .content-list-item`);
@@ -163,11 +165,44 @@
       }
 
       function submit() {
-        const requestForm = document.getElementById('requestForm');
-        const formValues = JSON.stringify(Object.fromEntries(new FormData(requestForm)));
+        if (global_isRequestLoading) return;
+        setRequestLoading(true);
 
-        console.log('formValues', formValues);
-        alert('submitted');
+        const requestForm = document.getElementById('requestForm');
+        const formValues = Object.fromEntries(new FormData(requestForm));
+        console.log(formValues);
+        console.log('formValues', JSON.stringify(formValues));
+
+        switch (formValues.typ) {
+          case 'xhr':
+            requestWithXhr(formValues);
+            break;
+          case 'fetch':
+            requestWithFetch(formValues);
+            break;
+          case 'ajax':
+            requestWithAjax(formValues);
+            break;
+          case 'axios':
+            requestWithAxios(formValues);
+            break;
+          default:
+            break;
+        }
+
+        setTimeout(() => {
+          setRequestLoading(false);
+        }, 2000);
+      }
+
+      function setRequestLoading(boolean) {
+        if (boolean) {
+          global_isRequestLoading = true;
+          document.getElementById('requestButton').classList.add('is-loading');
+        } else {
+          global_isRequestLoading = false;
+          document.getElementById('requestButton').classList.remove('is-loading');
+        }
       }
     </script>
   </body>
