@@ -73,8 +73,8 @@
                 <li class="is-disabled"><a onclick="/* openTab(event, '#request', 6) */">Settings</a></li>
               </ul>
             </div>
-            <div class="content-list flex-grow">
-              <div class="content-list-item is-active">
+            <div class="content-list">
+              <div class="content is-marginless content-list-item is-active">
                 <div class="field custom-field">
                   <label class="label is-small" for="params">Query Params</label>
                   <div class="control">
@@ -85,10 +85,10 @@
                   </div>
                 </div>
               </div>
-              <div class="content-list-item">
+              <div class="content is-marginless content-list-item">
                 Authorization Content
               </div>
-              <div class="content-list-item">
+              <div class="content is-marginless content-list-item">
                 <div class="field custom-field">
                   <label class="label is-small" for="headers">Headers</label>
                   <div class="control">
@@ -100,7 +100,7 @@
                   </div>
                 </div>
               </div>
-              <div class="content-list-item">
+              <div class="content is-marginless content-list-item">
                 <div class="field custom-field">
                   <label class="label is-small" for="body">Body</label>
                   <div class="control">
@@ -112,13 +112,13 @@
                   </div>
                 </div>
               </div>
-              <div class="content-list-item">
+              <div class="content is-marginless content-list-item">
                 Pre-request Script Content
               </div>
-              <div class="content-list-item">
+              <div class="content is-marginless content-list-item">
                 Tests Content
               </div>
-              <div class="content-list-item">
+              <div class="content is-marginless content-list-item">
                 Settings Content
               </div>
             </div>
@@ -127,21 +127,29 @@
             <div class="tabs is-small custom-tabs">
               <ul>
                 <li class="is-active"><a onclick="openTab(event, '#response', 0)">Body</a></li>
-                <li><a onclick="openTab(event, '#response', 1)">Cookies</a></li>
+                <li class="is-disabled"><a onclick="/* openTab(event, '#response', 1) */">Cookies</a></li>
                 <li><a onclick="openTab(event, '#response', 2)">Headers</a></li>
                 <li class="is-disabled"><a onclick="/* openTab(event, '#response', 3) */">Test Results</a></li>
-                <div class="response-info">
-                  Status: <span class="has-text-success">200 OK</span>
+                <div class="response-info has-text-weight-semibold">
+                  Status: <span class="has-text-success">-</span>
                   <!-- Time: <span class="has-text-danger">436ms</span> -->
                   <!-- Size: <span class="has-text-warning">1.61KB</span> -->
                 </div>
               </ul>
             </div>
-            <div class="content-list flex-grow">
-              <div class="content-list-item is-active">Body</div>
-              <div class="content-list-item">Cookies</div>
-              <div class="content-list-item">Headers</div>
-              <div class="content-list-item">Test Results</div>
+            <div class="content-list">
+              <div class="content is-marginless content-list-item is-active">
+                Body
+              </div>
+              <div class="content is-marginless content-list-item">
+                Cookies
+              </div>
+              <div class="content is-marginless content-list-item">
+                Headers
+              </div>
+              <div class="content is-marginless content-list-item">
+                Test Results
+              </div>
             </div>
           </div>
         </form>
@@ -200,10 +208,6 @@
           default:
             break;
         }
-
-        setTimeout(() => {
-          setRequestLoading(false);
-        }, 2000);
       }
 
       function reset() {
@@ -290,17 +294,20 @@
         }
 
         xhr.onload = function() {
-          console.log('request sent');
-
           if (xhr.status != 200) { // HTTP error?
-            updateResponseInfoSpan(xhr.status, 'fail');
+            setResponseInfoSpan(xhr.status, 'fail');
             // handle error
-            alert( 'Error: ' + xhr.status);
-            return;
           } else {
-            updateResponseInfoSpan(xhr.status, 'success');
+            setResponseInfoSpan(xhr.status, 'success');
             // get the response from xhr.response
           }
+
+          const responseData = xhr.response;
+          const headers = xhr.getAllResponseHeaders();
+
+          setResponseBodyTab(responseData);
+          setResponseHeadersTab(headers)
+          setRequestLoading(false);
         };
 
         // TODO: loading
@@ -310,26 +317,30 @@
         // };
 
         xhr.onerror = function() {
-          alert('Request failed');
           // handle non-HTTP error (e.g. network down)
+          alert('Request failed');
+          setRequestLoading(false);
         };
 
         xhr.send(parsedBody);
       }
 
       function requestWithFetch(formValues) {
-
+        alert('Fetch coming soon');
+        setRequestLoading(false);
       }
 
       function requestWithAjax(formValues) {
-
+        alert('Ajax coming soon');
+        setRequestLoading(false);
       }
 
       function requestWithAxios(formValues) {
-
+        alert('Axios coming soon');
+        setRequestLoading(false);
       }
 
-      function updateResponseInfoSpan(text, type) {
+      function setResponseInfoSpan(text, type) {
         const [span] = document.querySelectorAll('.response-info span');
 
         if (!span) {
@@ -383,6 +394,15 @@
         }
       }
 
+      function setResponseBodyTab(responseData) {
+        const bodyElement = document.querySelectorAll('#response .content-list .content-list-item')[0];
+        bodyElement.innerHTML = responseData;
+      }
+
+      function setResponseHeadersTab(headers) {
+        const headersElement = document.querySelectorAll('#response .content-list .content-list-item')[2];
+        headersElement.innerHTML = headers;
+      }
     </script>
   </body>
 </html>
