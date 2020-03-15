@@ -126,10 +126,10 @@
                 <li><a onclick="openTab(event, '#response', 1)">Cookies</a></li>
                 <li><a onclick="openTab(event, '#response', 2)">Headers</a></li>
                 <li class="is-disabled"><a onclick="/* openTab(event, '#response', 3) */">Test Results</a></li>
-                <div class="response-tabs-info">
+                <div class="response-info">
                   Status: <span class="has-text-success">200 OK</span>
-                  Time: <span class="has-text-danger">436ms</span>
-                  Size: <span class="has-text-warning">1.61KB</span>
+                  <!-- Time: <span class="has-text-danger">436ms</span> -->
+                  <!-- Size: <span class="has-text-warning">1.61KB</span> -->
                 </div>
               </ul>
             </div>
@@ -144,6 +144,7 @@
       </div>
     </section>
     <script>
+      // TODO: move content type to radio options
       var global_isRequestLoading = false;
 
       function openTab(evt, contentId, tabIndex) {
@@ -173,7 +174,7 @@
         console.log(formValues);
         console.log('formValues', JSON.stringify(formValues));
 
-        switch (formValues.typ) {
+        switch (formValues.type) {
           case 'xhr':
             requestWithXhr(formValues);
             break;
@@ -204,6 +205,133 @@
           document.getElementById('requestButton').classList.remove('is-loading');
         }
       }
+
+      function parseKeyValueString(input) {
+        if (!input) return {};
+
+        const output = {};
+        const keyValuePair = input.split('\r\n');
+
+        for (let i = 0; i < keyValuePair.length; i += 1) {
+          const [key, value] = keyValuePair[i].split(':');
+          output[key] = value;
+        }
+
+        return output;
+      }
+
+      function requestWithXhr(formValues) {
+        const { method, requestUrl } = formValues;
+        const params = parseKeyValueString(formValues.params);
+        const headers = parseKeyValueString(formValues.headers);
+        const body = parseKeyValueString(formValues.body);
+        const xhr = new XMLHttpRequest();
+        let parsedParams = '';
+        let parsedBody = null;
+
+        if (params && Object.keys(params).length > 0) {
+          const keys = Object.keys(params);
+
+          for (let i = 0; i < keys.length; i += 1) {
+            const key = keys[i];
+            const value = params[key];
+
+            if (i === 0) parsedParams += '?';
+            else parsedParams += '&';
+            parsedParams += `${key}=${value}`;
+          }
+        }
+
+        xhr.open(method, `${requestUrl}${parsedParams}`, true);
+
+        if (headers && Object.keys(headers).length > 0) {
+          const keys = Object.keys(headers);
+
+          for (let i = 0; i < keys.length; i += 1) {
+            const key = keys[i];
+            const value = headers[key];
+
+            xhr.setRequestHeader(key, value);
+          }
+        }
+
+        if (body && Object.keys(body).length > 0) {
+          const contentType = headers['Content-Type'];
+
+          if (!contentType) {
+            parsedBody = null;
+          } else if (contentType === 'multipart/form-data') {
+            parsedBody = new FormData();
+            for (let i = 0; i < body.length; i += 1) {
+              const key = keys[i];
+              const value = body[key];
+
+              parsedBody.append(key, value);
+            }
+          } else if (contentType === 'application/x-www-form-urlencoded') {
+            parsedBody = (new URLSearchParams(body)).toString();
+          } else {
+            parsedBody = JSON.stringify(body);
+          }
+        }
+
+        xhr.onload = function() {
+          console.log('request sent');
+
+          if (xhr.status != 200) { // HTTP error?
+            updateResponseInfoSpan(xhr.status, 'fail');
+            // handle error
+            alert( 'Error: ' + xhr.status);
+            return;
+          } else {
+            updateResponseInfoSpan(xhr.status, 'success');
+            // get the response from xhr.response
+          }
+        };
+
+        // TODO: loading
+        // xhr.onprogress = function(event) {
+        //   // report progress
+        //   alert(`Loaded ${event.loaded} of ${event.total}`);
+        // };
+
+        xhr.onerror = function() {
+          alert('Request failed');
+          // handle non-HTTP error (e.g. network down)
+        };
+
+        xhr.send(parsedBody);
+      }
+
+      function requestWithFetch(formValues) {
+
+      }
+
+      function requestWithAjax(formValues) {
+
+      }
+
+      function requestWithAxios(formValues) {
+
+      }
+
+      function updateResponseInfoSpan(text, type) {
+        const [span] = document.querySelectorAll('.response-info span');
+
+        if (!span) {
+          return;
+        } else if (type === 'success') {
+          span.innerHTML = text;
+          span.className = 'has-text-success';
+        } else if (type === 'fail') {
+          span.innerHTML = text;
+          span.className = 'has-text-danger';
+        } else {
+          span.innerHTML = text;
+          span.className = 'has-text-warning';
+        }
+      }
+
     </script>
   </body>
 </html>
