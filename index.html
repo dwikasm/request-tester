@@ -147,6 +147,10 @@
       // TODO: move content type to radio options
       var global_isRequestLoading = false;
 
+      loadFormHistory();
+
+      /* Functions */
+
       function openTab(evt, contentId, tabIndex) {
         const tabsItems = document.querySelectorAll(`${contentId} .tabs ul li`);
         const contentItems = document.querySelectorAll(`${contentId} .content-list-item`);
@@ -173,6 +177,8 @@
         const formValues = Object.fromEntries(new FormData(requestForm));
         console.log(formValues);
         console.log('formValues', JSON.stringify(formValues));
+
+        setFormHistory(requestForm);
 
         switch (formValues.type) {
           case 'xhr':
@@ -329,6 +335,43 @@
         } else {
           span.innerHTML = text;
           span.className = 'has-text-warning';
+        }
+      }
+
+      function loadFormHistory() {
+        const formHistory = localStorage.getItem('form-data');
+
+        if (formHistory) {
+          const form = document.getElementById('requestForm');
+          formDeserialize(form, formHistory);
+        }
+      }
+
+      function setFormHistory() {
+        const form = document.getElementById('requestForm');
+
+        if (form) {
+          const formHistory = formSerialize(form);
+          localStorage.setItem('form-data', formHistory);
+        }
+      }
+
+      function formSerialize(form) {
+        const data = new FormData(form);
+
+        return new URLSearchParams(data).toString();
+      }
+
+      function formDeserialize(form, data) {
+        const entries = (new URLSearchParams(data)).entries();
+
+        for(const [key, val] of entries) {
+          const input = form.elements[key];
+
+          switch(input.type) {
+            case 'checkbox': input.checked = !!val; break;
+            default: input.value = val; break;
+          }
         }
       }
 
